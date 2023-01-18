@@ -6,6 +6,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Scanner;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 class Main {
 
@@ -14,7 +15,6 @@ class Main {
 		URL url = new URL("https://api.openai.com/v1/completions");
 		
 		String query=new String();
-		//query="Decide whether a Tweet's sentiment is positive, neutral, or negative. Tweet: I loved the new Batman movie! Sentiment:";
 		query="How to design operations dashboard using power BI ?";
 		StringBuffer request=new StringBuffer();
 		request.append("{  "
@@ -22,7 +22,7 @@ class Main {
 				+ " \"prompt\":  \""+ query+"\",\n"
 				+ " \"temperature\" : 0,\n");
 		request.append("");
-		request.append("  \"max_tokens\": 60,\n");
+		request.append("  \"max_tokens\": 360,\n");
 		request.append("  \"top_p\": 1,\n");
 		request.append("  \"frequency_penalty\": 0.5,\n");
 		request.append("  \"presence_penalty\": 0}");
@@ -33,7 +33,7 @@ class Main {
 		httpConn.setRequestMethod("POST");
 
 		httpConn.setRequestProperty("Content-Type", "application/json");
-		httpConn.setRequestProperty("Authorization", "Bearer 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");
+		httpConn.setRequestProperty("Authorization", "Bearer "+args[0]);
 
 		httpConn.setDoOutput(true);
 		OutputStreamWriter writer = new OutputStreamWriter(httpConn.getOutputStream());
@@ -41,16 +41,19 @@ class Main {
 		writer.flush();
 		writer.close();
 		httpConn.getOutputStream().close();
-
+		ObjectMapper mapper = new ObjectMapper();
 		InputStream responseStream = httpConn.getResponseCode() / 100 == 2
 				? httpConn.getInputStream()
 				: httpConn.getErrorStream();
 		Scanner s = new Scanner(responseStream).useDelimiter("\\A");
 		String response = s.hasNext() ? s.next() : "";
 		System.out.println(response);
+		Root r = mapper.readValue(response, Root.class);
+        System.out.println("r = " + r.getChoices().get(0).getText());
 		
 		s.close();
 	}
 }
+
 
 
